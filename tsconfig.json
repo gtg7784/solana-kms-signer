@@ -1,0 +1,32 @@
+{
+	"compilerOptions": {
+		// Language and Environment
+		"target": "ES2020",
+		"lib": ["ES2020"],
+		"types": ["node"],
+
+		// Modules
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"moduleDetection": "force",
+		"resolveJsonModule": true,
+
+		// Emit
+		"outDir": "./dist",
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+
+		// Interop Constraints
+		"esModuleInterop": true,
+		"allowJs": true,
+		"isolatedModules": true,
+		"forceConsistentCasingInFileNames": true,
+
+		// Type Checking
+		"strict": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "**/*.test.ts", "examples"]
+}
