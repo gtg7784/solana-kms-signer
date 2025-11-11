@@ -1,8 +1,10 @@
 {
   "name": "solana-kms-signer",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sign Solana transactions with AWS KMS ED25519 keys",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "vitest",
@@ -13,9 +15,37 @@
     "example:sign-message": "tsx examples/sign-message.ts",
     "example:sign-transaction": "tsx examples/sign-transaction.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "solana",
+    "kms",
+    "aws",
+    "signature",
+    "ed25519",
+    "transaction",
+    "signing",
+    "key-management",
+    "cryptography",
+    "blockchain"
+  ],
+  "author": "Taegeon Alan Go",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/solana-kms-signer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/solana-kms-signer/issues"
+  },
+  "homepage": "https://github.com/yourusername/solana-kms-signer#readme",
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "devDependencies": {
     "@types/node": "^24.10.0",
     "@vitest/coverage-v8": "^4.0.8",

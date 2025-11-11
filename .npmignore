@@ -1,0 +1,46 @@
+# Source files (keep src/ as specified in files array)
+*.ts
+!dist/**/*.d.ts
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+coverage
+.nyc_output
+
+# Config files
+tsconfig.json
+vitest.config.ts
+.eslintrc*
+.prettierrc*
+
+# Examples
+examples/
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.swp
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation source
+docs/
+
+# Build artifacts not needed
+*.map
+
+# Local environment
+.env
+.env.local
+.env.*.local
