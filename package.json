@@ -1,10 +1,16 @@
 {
   "name": "solana-kms-signer",
-  "version": "1.0.0",
-  "description": "Sign Solana transactions with AWS KMS ED25519 keys",
+  "version": "0.1.0",
+  "description": "AWS KMS-based Solana signer with ED25519 support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest",
@@ -34,12 +40,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/solana-kms-signer.git"
+    "url": "git+https://github.com/gtg7784/solana-kms-signer.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/solana-kms-signer/issues"
+    "url": "https://github.com/gtg7784/solana-kms-signer/issues"
   },
-  "homepage": "https://github.com/yourusername/solana-kms-signer#readme",
+  "homepage": "https://github.com/gtg7784/solana-kms-signer#readme",
   "files": [
     "dist",
     "src",
