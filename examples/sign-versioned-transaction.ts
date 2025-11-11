@@ -122,7 +122,8 @@ async function main() {
     console.log('   - Enables more complex transactions');
     console.log('   - Required for advanced Solana programs');
 
-    console.log('\n✅ Versioned transaction is ready to broadcast!');
+    const txId = await connection.sendRawTransaction(serialized);
+    console.log(`   Transaction ID: ${txId}`);
 
   } catch (error) {
     console.error('❌ Error:', error);

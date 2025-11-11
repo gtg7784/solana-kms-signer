@@ -129,16 +129,8 @@ async function main() {
     console.log(`   Fee Payer: ${fromPubkey.toString()}`);
     console.log(`   Signatures: ${signedTx.signatures.length}`);
 
-    // Note about broadcasting
-    console.log('\n💡 Note: Transaction is ready to broadcast!');
-    if (balance > transferAmount) {
-      console.log('   To broadcast, you could use:');
-      console.log('   const txId = await connection.sendRawTransaction(serialized);');
-    } else {
-      console.log('   Insufficient balance to broadcast this transaction.');
-      console.log('   Fund your account and try again.');
-    }
-
+    const txId = await connection.sendRawTransaction(serialized);
+    console.log(`   Transaction ID: ${txId}`);
   } catch (error) {
     console.error('❌ Error:', error);
     if (error instanceof Error) {

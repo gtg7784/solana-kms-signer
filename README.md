@@ -60,15 +60,19 @@ aws kms create-key \
 
 #### Using the Example Script
 
-This library includes a helper script to create KMS keys:
+Please create a KMS key with the following specifications:
+- KeySpec: ECC_NIST_EDWARDS25519
+- KeyUsage: SIGN_VERIFY
+- Description: ED25519 key for Solana transaction signing
+- Region: us-east-1
 
+**Example:**
 ```bash
-# Set up environment
-cp .env.example .env
-# Edit .env and add your AWS_REGION
-
-# Run the create key script
-pnpm example:create-kms-key
+aws kms create-key \
+  --key-spec ECC_NIST_EDWARDS25519 \
+  --key-usage SIGN_VERIFY \
+  --description "ED25519 key for Solana transaction signing" \
+  --region us-east-1
 ```
 
 ### Required IAM Permissions
@@ -388,17 +392,7 @@ If you don't provide explicit credentials, the AWS SDK will use the default cred
 
 This library includes several example scripts demonstrating different use cases:
 
-### 1. Create KMS Key
-
-Create a new ED25519 key in AWS KMS:
-
-```bash
-pnpm example:create-kms-key
-```
-
-**Script:** [`examples/create-kms-key.ts`](examples/create-kms-key.ts)
-
-### 2. Sign Message
+### 1. Sign Message
 
 Sign an arbitrary message:
 
@@ -408,7 +402,7 @@ pnpm example:sign-message
 
 **Script:** [`examples/sign-message.ts`](examples/sign-message.ts)
 
-### 3. Sign Transaction
+### 2. Sign Transaction
 
 Sign a Solana legacy transaction:
 
@@ -418,7 +412,7 @@ pnpm example:sign-transaction
 
 **Script:** [`examples/sign-transaction.ts`](examples/sign-transaction.ts)
 
-### 4. Sign Versioned Transaction
+### 3. Sign Versioned Transaction
 
 Sign a Solana versioned transaction:
 
@@ -428,7 +422,7 @@ pnpm example:sign-versioned-transaction
 
 **Script:** [`examples/sign-versioned-transaction.ts`](examples/sign-versioned-transaction.ts)
 
-### 5. Multiple Signatures
+### 4. Multiple Signatures
 
 Sign multiple transactions in parallel:
 
@@ -604,7 +598,3 @@ If you encounter any issues or have questions:
 1. Check the [Troubleshooting](#troubleshooting) section
 2. Search [existing issues](https://github.com/yourusername/solana-kms-signer/issues)
 3. [Open a new issue](https://github.com/yourusername/solana-kms-signer/issues/new)
-
----
-
-Made with ❤️ by [Taegeon Alan Go](https://github.com/gtg7784)

@@ -21,8 +21,7 @@
     "example:sign-message": "tsx examples/sign-message.ts",
     "example:sign-transaction": "tsx examples/sign-transaction.ts",
     "example:sign-versioned-transaction": "tsx examples/sign-versioned-transaction.ts",
-    "example:multiple-signatures": "tsx examples/multiple-signatures.ts",
-    "example:create-kms-key": "tsx examples/create-kms-key.ts"
+    "example:multiple-signatures": "tsx examples/multiple-signatures.ts"
   },
   "keywords": [
     "solana",

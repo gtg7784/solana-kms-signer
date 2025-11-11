@@ -59,7 +59,7 @@ async function main() {
     ];
 
     const startTime = Date.now();
-    const signatures = [];
+    const signatures: Uint8Array[] = [];
 
     for (let i = 0; i < messages.length; i++) {
       const message = Buffer.from(messages[i]);
@@ -78,7 +78,7 @@ async function main() {
     const { blockhash } = await connection.getLatestBlockhash();
 
     // Create multiple transactions
-    const transactions = [];
+    const transactions: Transaction[] = [];
     const recipients = [
       PublicKey.unique(),
       PublicKey.unique(),
@@ -107,7 +107,7 @@ async function main() {
 
     console.log('\n   Signing transactions...');
     const txStartTime = Date.now();
-    const signedTransactions = [];
+    const signedTransactions: Transaction[] = [];
 
     for (let i = 0; i < transactions.length; i++) {
       const signedTx = await signer.signTransaction(transactions[i]);
@@ -168,6 +168,11 @@ async function main() {
     console.log('   - Use parallel signing when possible');
     console.log('   - Consider AWS KMS rate limits (varies by region)');
     console.log('   - Monitor CloudWatch metrics for KMS usage');
+
+    const txIds = await Promise.all(
+      parallelSigned.map((tx) => connection.sendRawTransaction(tx.serialize()))
+    );
+    console.log(`   Transaction IDs: ${txIds.map((txId) => txId.toString()).join(', ')}`);
 
   } catch (error) {
     console.error('❌ Error:', error);
