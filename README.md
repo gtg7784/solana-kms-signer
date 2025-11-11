@@ -1,61 +1,79 @@
 # Solana KMS Signer
 
-A TypeScript library for signing Solana transactions using AWS Key Management Service (KMS) with ED25519 keys.
+A TypeScript library for signing Solana transactions using AWS KMS with ED25519 keys.
 
-[![npm version](https://badge.fury.io/js/solana-kms-signer.svg)](https://badge.fury.io/js/solana-kms-signer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Node](https://img.shields.io/badge/Node-%3E%3D16.0.0-green.svg)](https://nodejs.org/)
 
-## Overview
+## Features
 
-This library enables secure signing of Solana transactions using AWS KMS-managed ED25519 keys. It provides a seamless integration between AWS KMS and Solana's transaction signing requirements, allowing you to leverage AWS's secure key management infrastructure for your Solana applications.
-
-### Key Features
-
-- 🔐 **Secure Key Management**: Private keys never leave AWS KMS
-- ✨ **ED25519 Support**: Full support for Solana's ED25519 signature requirements
-- 🚀 **High Performance**: Optimized with public key caching
-- 📦 **TypeScript First**: Complete type definitions and IntelliSense support
-- ✅ **Comprehensive Testing**: 97%+ test coverage
-- 🔄 **Transaction Support**: Both legacy and versioned transactions
+- **AWS KMS Integration**: Leverage AWS KMS's ED25519 key management for secure Solana transaction signing
+- **Type Safety**: Full TypeScript support with strict type checking
+- **Solana Compatibility**: Support for both legacy `Transaction` and `VersionedTransaction`
+- **Public Key Caching**: Automatic caching to minimize KMS API calls
+- **Signature Verification**: Built-in signature verification using tweetnacl
+- **Multiple Signatures**: Batch signing support for multiple transactions
+- **Error Handling**: Comprehensive error types with detailed messages
+- **Zero Dependencies**: Minimal external dependencies (only AWS SDK, Solana Web3.js, and tweetnacl)
 
 ## Prerequisites
 
-- Node.js >= 16
-- AWS account with KMS access
-- KMS key with ED25519 key spec
+- **Node.js**: Version 16.0.0 or higher
+- **AWS Account**: With appropriate IAM permissions
+- **AWS KMS**: ED25519 key created in KMS (see setup instructions below)
 
 ## Installation
 
-```bash
-npm install solana-kms-signer
-```
-
-or with yarn:
-
-```bash
-yarn add solana-kms-signer
-```
-
-or with pnpm:
-
+Using pnpm:
 ```bash
 pnpm add solana-kms-signer
 ```
 
+Using npm:
+```bash
+npm install solana-kms-signer
+```
+
+Using yarn:
+```bash
+yarn add solana-kms-signer
+```
+
 ## AWS KMS Setup
 
-### Create an ED25519 KMS Key
+### Creating an ED25519 Key
+
+You can create an ED25519 key using the AWS CLI or the AWS Console.
+
+#### Using AWS CLI
 
 ```bash
 aws kms create-key \
-  --key-spec ED25519 \
+  --key-spec ECC_NIST_EDWARDS25519 \
   --key-usage SIGN_VERIFY \
-  --description "Solana ED25519 signing key"
+  --description "ED25519 key for Solana transaction signing" \
+  --region us-east-1
+```
+
+**Important**: Use the exact KeySpec value `ECC_NIST_EDWARDS25519` (not `ECC_ED25519` or `ED25519`).
+
+#### Using the Example Script
+
+This library includes a helper script to create KMS keys:
+
+```bash
+# Set up environment
+cp .env.example .env
+# Edit .env and add your AWS_REGION
+
+# Run the create key script
+pnpm example:create-kms-key
 ```
 
 ### Required IAM Permissions
 
-Your AWS credentials need the following KMS permissions:
+Your AWS credentials must have the following KMS permissions:
 
 ```json
 {
@@ -67,264 +85,526 @@ Your AWS credentials need the following KMS permissions:
         "kms:GetPublicKey",
         "kms:Sign"
       ],
-      "Resource": "arn:aws:kms:region:account:key/key-id"
+      "Resource": "arn:aws:kms:REGION:ACCOUNT:key/KEY_ID"
     }
   ]
 }
 ```
 
+For creating keys, you also need:
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "kms:CreateKey",
+    "kms:TagResource"
+  ],
+  "Resource": "*"
+}
+```
+
 ## Quick Start
 
-### Basic Usage
+### Environment Setup
 
-```typescript
-import { SolanaKmsSigner } from 'solana-kms-signer';
-
-// Initialize the signer
-const signer = new SolanaKmsSigner({
-  region: 'us-east-1',
-  keyId: 'arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012'
-});
-
-// Get the public key
-const publicKey = await signer.getPublicKey();
-console.log('Public Key:', publicKey.toString());
-
-// Sign a message
-const message = Buffer.from('Hello, Solana!');
-const signature = await signer.signMessage(message);
-console.log('Signature:', Buffer.from(signature).toString('hex'));
-```
-
-### Sign a Transaction
-
-```typescript
-import { SolanaKmsSigner } from 'solana-kms-signer';
-import { Connection, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
-
-const signer = new SolanaKmsSigner({
-  region: 'us-east-1',
-  keyId: 'your-kms-key-id'
-});
-
-// Create a transaction
-const connection = new Connection('https://api.devnet.solana.com');
-const publicKey = await signer.getPublicKey();
-const transaction = new Transaction();
-
-transaction.add(
-  SystemProgram.transfer({
-    fromPubkey: publicKey,
-    toPubkey: recipientPublicKey,
-    lamports: 0.001 * LAMPORTS_PER_SOL
-  })
-);
-
-// Get recent blockhash
-const { blockhash } = await connection.getLatestBlockhash();
-transaction.recentBlockhash = blockhash;
-transaction.feePayer = publicKey;
-
-// Sign the transaction
-const signedTx = await signer.signTransaction(transaction);
-
-// Send the transaction
-const txId = await connection.sendRawTransaction(signedTx.serialize());
-```
-
-## API Reference
-
-### SolanaKmsSigner
-
-The main class for signing operations.
-
-#### Constructor
-
-```typescript
-new SolanaKmsSigner(config: SolanaKmsSignerConfig)
-```
-
-**Parameters:**
-- `config.region` (string): AWS region where the KMS key is located
-- `config.keyId` (string): KMS key ID or ARN
-- `config.credentials` (optional): AWS credentials object
-
-#### Methods
-
-##### `getPublicKey(): Promise<PublicKey>`
-
-Returns the Solana PublicKey object for the KMS key. The public key is cached after the first retrieval.
-
-##### `getRawPublicKey(): Promise<Uint8Array>`
-
-Returns the raw 32-byte ED25519 public key as Uint8Array.
-
-##### `signMessage(message: Uint8Array): Promise<Uint8Array>`
-
-Signs an arbitrary message and returns the 64-byte signature.
-
-##### `signTransaction(transaction: Transaction): Promise<Transaction>`
-
-Signs a Solana legacy transaction.
-
-##### `signVersionedTransaction(transaction: VersionedTransaction): Promise<VersionedTransaction>`
-
-Signs a Solana versioned transaction (v0).
-
-##### `signAllTransactions(transactions: Transaction[]): Promise<Transaction[]>`
-
-Signs multiple legacy transactions in sequence.
-
-### Error Classes
-
-The library provides specific error classes for different failure scenarios:
-
-- `KmsClientError`: AWS KMS API errors
-- `PublicKeyExtractionError`: DER decoding errors
-- `SignatureVerificationError`: Signature validation failures
-
-## Configuration
-
-### Environment Variables
-
-You can configure the signer using environment variables:
+Create a `.env` file:
 
 ```bash
-# AWS Configuration
+# AWS KMS Configuration
 AWS_REGION=us-east-1
-AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/...
+AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
 
-# AWS Credentials (optional - will use default chain if not provided)
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_SESSION_TOKEN=your-session-token  # For temporary credentials
+# AWS Credentials (optional - will use default credential chain if not provided)
+# AWS_ACCESS_KEY_ID=your-access-key
+# AWS_SECRET_ACCESS_KEY=your-secret-key
+# AWS_SESSION_TOKEN=your-session-token
 
 # Solana Configuration
 SOLANA_RPC_URL=https://api.devnet.solana.com
 ```
 
+### Basic Usage
+
+```typescript
+import { SolanaKmsSigner } from 'solana-kms-signer';
+import { Connection, SystemProgram, Transaction } from '@solana/web3.js';
+
+// Initialize the signer
+const signer = new SolanaKmsSigner({
+  region: 'us-east-1',
+  keyId: 'your-kms-key-id'
+});
+
+// Get the public key
+const publicKey = await signer.getPublicKey();
+console.log('Solana Address:', publicKey.toBase58());
+
+// Sign a message
+const message = Buffer.from('Hello, Solana!');
+const signature = await signer.signMessage(message);
+
+// Sign a transaction
+const connection = new Connection('https://api.devnet.solana.com');
+const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+const transaction = new Transaction({
+  recentBlockhash,
+  feePayer: publicKey
+}).add(
+  SystemProgram.transfer({
+    fromPubkey: publicKey,
+    toPubkey: recipientPubkey,
+    lamports: 1000000 // 0.001 SOL
+  })
+);
+
+const signedTransaction = await signer.signTransaction(transaction);
+const txid = await connection.sendRawTransaction(signedTransaction.serialize());
+console.log('Transaction ID:', txid);
+```
+
+## API Reference
+
+### `SolanaKmsSigner`
+
+The main class for signing Solana transactions with AWS KMS.
+
+#### Constructor
+
+```typescript
+new SolanaKmsSigner(config: KmsConfig | KmsClient)
+```
+
+Creates a new signer instance.
+
+**Parameters:**
+- `config`: Either a `KmsConfig` object or an existing `KmsClient` instance
+
+**KmsConfig Type:**
+```typescript
+interface KmsConfig {
+  region: string;
+  keyId: string;
+  credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken?: string;
+  };
+}
+```
+
+**Example:**
+```typescript
+// With KmsConfig
+const signer = new SolanaKmsSigner({
+  region: 'us-east-1',
+  keyId: 'your-key-id'
+});
+
+// With existing KmsClient
+import { KmsClient } from 'solana-kms-signer';
+const client = new KmsClient(config);
+const signer = new SolanaKmsSigner(client);
+```
+
+#### Methods
+
+##### `getPublicKey(): Promise<PublicKey>`
+
+Retrieves the Solana PublicKey associated with the KMS key. The public key is cached after first retrieval.
+
+**Returns:** `Promise<PublicKey>` - Solana PublicKey object
+
+**Throws:**
+- `KmsClientError` - If KMS API call fails
+- `PublicKeyExtractionError` - If DER decoding fails
+
+**Example:**
+```typescript
+const publicKey = await signer.getPublicKey();
+console.log('Address:', publicKey.toBase58());
+```
+
+##### `getRawPublicKey(): Promise<Uint8Array>`
+
+Retrieves the raw 32-byte ED25519 public key. The public key is cached after first retrieval.
+
+**Returns:** `Promise<Uint8Array>` - Raw 32-byte public key
+
+**Throws:**
+- `KmsClientError` - If KMS API call fails
+- `PublicKeyExtractionError` - If DER decoding fails
+
+**Example:**
+```typescript
+const rawPublicKey = await signer.getRawPublicKey();
+console.log('Raw public key length:', rawPublicKey.length); // 32
+```
+
+##### `signMessage(message: Uint8Array): Promise<Uint8Array>`
+
+Signs an arbitrary message using the KMS key. The signature is verified using tweetnacl before being returned.
+
+**Parameters:**
+- `message`: Message to sign as Uint8Array
+
+**Returns:** `Promise<Uint8Array>` - ED25519 signature (64 bytes)
+
+**Throws:**
+- `KmsClientError` - If KMS API call fails
+- `SignatureVerificationError` - If signature verification fails
+
+**Example:**
+```typescript
+const message = new TextEncoder().encode('Hello, Solana!');
+const signature = await signer.signMessage(message);
+console.log('Signature length:', signature.length); // 64
+```
+
+##### `signTransaction(transaction: Transaction): Promise<Transaction>`
+
+Signs a Solana legacy Transaction. The transaction must have `recentBlockhash` and `feePayer` set before signing.
+
+**Parameters:**
+- `transaction`: Transaction to sign
+
+**Returns:** `Promise<Transaction>` - Signed transaction
+
+**Throws:**
+- `KmsClientError` - If KMS API call fails
+- `SignatureVerificationError` - If signature verification fails
+
+**Example:**
+```typescript
+const transaction = new Transaction().add(instruction);
+transaction.recentBlockhash = recentBlockhash;
+transaction.feePayer = await signer.getPublicKey();
+const signedTx = await signer.signTransaction(transaction);
+```
+
+##### `signVersionedTransaction(transaction: VersionedTransaction): Promise<VersionedTransaction>`
+
+Signs a Solana VersionedTransaction. The transaction must have a valid message with `recentBlockhash` set.
+
+**Parameters:**
+- `transaction`: VersionedTransaction to sign
+
+**Returns:** `Promise<VersionedTransaction>` - Signed versioned transaction
+
+**Throws:**
+- `KmsClientError` - If KMS API call fails
+- `SignatureVerificationError` - If signature verification fails
+
+**Example:**
+```typescript
+import { MessageV0, VersionedTransaction } from '@solana/web3.js';
+
+const message = MessageV0.compile({
+  payerKey: await signer.getPublicKey(),
+  instructions: [instruction],
+  recentBlockhash: recentBlockhash
+});
+const transaction = new VersionedTransaction(message);
+const signedTx = await signer.signVersionedTransaction(transaction);
+```
+
+##### `signAllTransactions(transactions: Transaction[]): Promise<Transaction[]>`
+
+Signs multiple Solana transactions in parallel. All transactions must have `recentBlockhash` and `feePayer` set before signing.
+
+**Parameters:**
+- `transactions`: Array of transactions to sign
+
+**Returns:** `Promise<Transaction[]>` - Array of signed transactions in the same order
+
+**Throws:**
+- `KmsClientError` - If any KMS API call fails
+- `SignatureVerificationError` - If any signature verification fails
+
+**Example:**
+```typescript
+const transactions = [tx1, tx2, tx3];
+const signedTxs = await signer.signAllTransactions(transactions);
+```
+
+### Error Classes
+
+The library exports the following error classes:
+
+#### `KmsClientError`
+
+Thrown when AWS KMS API calls fail.
+
+```typescript
+class KmsClientError extends Error {
+  cause?: unknown;
+}
+```
+
+#### `PublicKeyExtractionError`
+
+Thrown when DER-encoded public key extraction fails.
+
+```typescript
+class PublicKeyExtractionError extends Error {
+  cause?: unknown;
+}
+```
+
+#### `SignatureVerificationError`
+
+Thrown when signature verification fails after signing.
+
+```typescript
+class SignatureVerificationError extends Error {
+  cause?: unknown;
+}
+```
+
+## Configuration
+
+### Environment Variables
+
+The library supports the following environment variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `AWS_REGION` | Yes | AWS region where the KMS key is located (e.g., `us-east-1`) |
+| `AWS_KMS_KEY_ID` | Yes | KMS key ID or ARN |
+| `AWS_ACCESS_KEY_ID` | No | AWS access key (uses default credential chain if not provided) |
+| `AWS_SECRET_ACCESS_KEY` | No | AWS secret key (uses default credential chain if not provided) |
+| `AWS_SESSION_TOKEN` | No | AWS session token (for temporary credentials) |
+| `SOLANA_RPC_URL` | No | Solana RPC endpoint (for examples) |
+
 ### AWS Credential Chain
 
-If credentials are not explicitly provided, the library uses AWS SDK's default credential chain:
+If you don't provide explicit credentials, the AWS SDK will use the default credential chain:
 
-1. Environment variables
-2. Shared credentials file (`~/.aws/credentials`)
-3. IAM roles for Amazon EC2
-4. IAM roles for AWS Lambda
+1. Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+2. AWS credentials file (`~/.aws/credentials`)
+3. IAM role (when running on EC2, ECS, Lambda, etc.)
 
 ## Examples
 
-The `examples/` directory contains complete working examples:
+This library includes several example scripts demonstrating different use cases:
 
-- **sign-message.ts**: Sign arbitrary messages
-- **sign-transaction.ts**: Sign and send SOL transfers
-- **sign-versioned-transaction.ts**: Work with versioned transactions (v0)
-- **multiple-signatures.ts**: Batch operations and performance optimization
+### 1. Create KMS Key
 
-Run examples:
+Create a new ED25519 key in AWS KMS:
 
 ```bash
-# Copy and configure .env file
-cp examples/.env.example .env
-
-# Run examples
-npm run example:sign-message
-npm run example:sign-transaction
+pnpm example:create-kms-key
 ```
+
+**Script:** [`examples/create-kms-key.ts`](examples/create-kms-key.ts)
+
+### 2. Sign Message
+
+Sign an arbitrary message:
+
+```bash
+pnpm example:sign-message
+```
+
+**Script:** [`examples/sign-message.ts`](examples/sign-message.ts)
+
+### 3. Sign Transaction
+
+Sign a Solana legacy transaction:
+
+```bash
+pnpm example:sign-transaction
+```
+
+**Script:** [`examples/sign-transaction.ts`](examples/sign-transaction.ts)
+
+### 4. Sign Versioned Transaction
+
+Sign a Solana versioned transaction:
+
+```bash
+pnpm example:sign-versioned-transaction
+```
+
+**Script:** [`examples/sign-versioned-transaction.ts`](examples/sign-versioned-transaction.ts)
+
+### 5. Multiple Signatures
+
+Sign multiple transactions in parallel:
+
+```bash
+pnpm example:multiple-signatures
+```
+
+**Script:** [`examples/multiple-signatures.ts`](examples/multiple-signatures.ts)
 
 ## Development
 
 ### Setup
 
+Clone the repository and install dependencies:
+
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/solana-kms-signer.git
 cd solana-kms-signer
-
-# Install dependencies
 pnpm install
+```
 
-# Run tests
-pnpm test
+### Building
 
-# Build the library
+Build the TypeScript code:
+
+```bash
 pnpm build
 ```
 
 ### Testing
 
+Run tests:
+
 ```bash
-# Run tests
+# Run tests in watch mode
 pnpm test
 
-# Run tests with coverage
-pnpm test:coverage
-
-# Run tests in watch mode
-pnpm test -- --watch
+# Run tests once
+pnpm test:run
 
 # Run tests with UI
 pnpm test:ui
+
+# Run tests with coverage
+pnpm test:coverage
 ```
 
+Current test coverage: **97.4%** (46 tests passing)
+
 ### Type Checking
+
+Run TypeScript type checking:
 
 ```bash
 pnpm type-check
 ```
 
-## Performance Considerations
+## Troubleshooting
 
-- **Public Key Caching**: The public key is cached after first retrieval to minimize KMS API calls
-- **Rate Limits**: AWS KMS has API rate limits that vary by region. Consider implementing retry logic for production use
-- **Parallel Operations**: Use `Promise.all()` for signing multiple independent transactions
+### Error: "InvalidKeyUsage"
+
+**Problem:** The KMS key was not created with `SIGN_VERIFY` usage.
+
+**Solution:** Create a new key with the correct KeyUsage:
+```bash
+aws kms create-key \
+  --key-spec ECC_NIST_EDWARDS25519 \
+  --key-usage SIGN_VERIFY
+```
+
+### Error: "UnsupportedOperationException"
+
+**Problem:** The KMS key was created with the wrong KeySpec.
+
+**Solution:** Ensure you're using `ECC_NIST_EDWARDS25519` (not `ECC_ED25519` or `ED25519`):
+```bash
+aws kms create-key \
+  --key-spec ECC_NIST_EDWARDS25519 \
+  --key-usage SIGN_VERIFY
+```
+
+### Error: "AccessDeniedException"
+
+**Problem:** Your AWS credentials don't have sufficient KMS permissions.
+
+**Solution:** Add the required IAM permissions:
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "kms:GetPublicKey",
+    "kms:Sign"
+  ],
+  "Resource": "arn:aws:kms:REGION:ACCOUNT:key/KEY_ID"
+}
+```
+
+### Error: "Public key extraction failed"
+
+**Problem:** The DER-encoded public key from KMS has an unexpected format.
+
+**Solution:** This usually indicates the key was created with the wrong KeySpec. Verify your key was created with `ECC_NIST_EDWARDS25519`:
+```bash
+aws kms describe-key --key-id your-key-id
+```
+
+### Error: "Signature verification failed"
+
+**Problem:** The signature from KMS doesn't match the public key and message.
+
+**Solution:** This is a critical error that should not occur in normal operation. Possible causes:
+- Network corruption (rare)
+- KMS service issue (very rare)
+- Bug in the library (please report!)
+
+If this error occurs consistently, please [open an issue](https://github.com/yourusername/solana-kms-signer/issues).
 
 ## Security Best Practices
 
-1. **IAM Policies**: Use least-privilege IAM policies
-2. **Key Policies**: Restrict KMS key usage to specific principals
-3. **Audit Logging**: Enable CloudTrail for KMS operations
-4. **Network Security**: Use VPC endpoints for KMS in production
-5. **Key Rotation**: Consider implementing key rotation strategies
+### Key Management
 
-## Troubleshooting
+1. **Never export private keys**: AWS KMS keys cannot be exported by design. This is a security feature, not a limitation.
+2. **Use key policies**: Restrict access to your KMS keys using IAM policies and key policies.
+3. **Enable CloudTrail**: Log all KMS API calls for audit purposes.
+4. **Consider key rotation**: While KMS doesn't support automatic rotation for asymmetric keys, you can implement manual rotation.
+5. **Use separate keys**: Use different KMS keys for different environments (dev, staging, production).
 
-### Common Issues
+### Credential Management
 
-**AccessDeniedException**
-- Ensure your AWS credentials have the required KMS permissions
-- Check the KMS key policy allows your principal
+1. **Use IAM roles**: When running on AWS infrastructure (EC2, ECS, Lambda), use IAM roles instead of access keys.
+2. **Never commit credentials**: Never commit AWS credentials to version control. Use `.env` files and add them to `.gitignore`.
+3. **Use temporary credentials**: When possible, use temporary credentials (STS) instead of long-lived access keys.
+4. **Rotate credentials**: Regularly rotate your AWS access keys.
 
-**Invalid Signature**
-- Verify the KMS key spec is ED25519
-- Ensure the message format matches what was signed
+### Application Security
 
-**Rate Limiting**
-- Implement exponential backoff for retries
-- Consider caching strategies for public keys
+1. **Validate inputs**: Always validate transaction inputs before signing.
+2. **Verify balances**: Check account balances before signing transfer transactions.
+3. **Use recent blockhashes**: Always use a recent blockhash to prevent replay attacks.
+4. **Test on devnet first**: Test your integration on Solana devnet before using on mainnet.
+5. **Implement rate limiting**: Rate limit signing operations to prevent abuse.
 
-## Contributing
+### Cost Management
 
-Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
+1. **Cache public keys**: The library automatically caches public keys to minimize KMS API calls.
+2. **Batch operations**: Use `signAllTransactions()` to sign multiple transactions efficiently.
+3. **Monitor usage**: Monitor your KMS usage through AWS Cost Explorer.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+**AWS KMS Pricing:**
+- Key storage: ~$1/month per key
+- API calls: $0.03 per 10,000 requests
+- GetPublicKey: Free
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- AWS SDK for JavaScript v3 for KMS integration
-- Solana Web3.js for transaction handling
-- TweetNaCl for ED25519 signature verification
+- Inspired by [EVM KMS Signer](https://github.com/gtg7784/evm-kms-signer)
+- Built with [AWS SDK for JavaScript v3](https://github.com/aws/aws-sdk-js-v3)
+- Uses [Solana Web3.js](https://github.com/solana-labs/solana-web3.js)
+- Signature verification powered by [TweetNaCl](https://github.com/dchest/tweetnacl-js)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-For issues and questions:
-- GitHub Issues: [https://github.com/yourusername/solana-kms-signer/issues](https://github.com/yourusername/solana-kms-signer/issues)
-- Documentation: [https://github.com/yourusername/solana-kms-signer#readme](https://github.com/yourusername/solana-kms-signer#readme)
+If you encounter any issues or have questions:
+
+1. Check the [Troubleshooting](#troubleshooting) section
+2. Search [existing issues](https://github.com/yourusername/solana-kms-signer/issues)
+3. [Open a new issue](https://github.com/yourusername/solana-kms-signer/issues/new)
+
+---
+
+Made with ❤️ by [Taegeon Alan Go](https://github.com/gtg7784)
