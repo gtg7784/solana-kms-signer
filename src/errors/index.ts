@@ -12,10 +12,13 @@
  * ```
  */
 export class KmsClientError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
-    super(message);
-    this.name = 'KmsClientError';
-  }
+	constructor(
+		message: string,
+		public readonly cause?: unknown,
+	) {
+		super(message);
+		this.name = 'KmsClientError';
+	}
 }
 
 /**
@@ -33,10 +36,13 @@ export class KmsClientError extends Error {
  * ```
  */
 export class PublicKeyExtractionError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
-    super(message);
-    this.name = 'PublicKeyExtractionError';
-  }
+	constructor(
+		message: string,
+		public readonly cause?: unknown,
+	) {
+		super(message);
+		this.name = 'PublicKeyExtractionError';
+	}
 }
 
 /**
@@ -54,8 +60,11 @@ export class PublicKeyExtractionError extends Error {
  * ```
  */
 export class SignatureVerificationError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
-    super(message);
-    this.name = 'SignatureVerificationError';
-  }
+	constructor(
+		message: string,
+		public readonly cause?: unknown,
+	) {
+		super(message);
+		this.name = 'SignatureVerificationError';
+	}
 }

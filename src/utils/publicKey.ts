@@ -27,44 +27,44 @@ import { PublicKeyExtractionError } from '../errors/index.js';
  * ```
  */
 export function extractEd25519PublicKey(derEncoded: Uint8Array): Uint8Array {
-  // Validate DER structure - first byte must be SEQUENCE tag (0x30)
-  if (derEncoded[0] !== 0x30) {
-    throw new PublicKeyExtractionError(
-      'Invalid DER encoding: missing SEQUENCE tag'
-    );
-  }
+	// Validate DER structure - first byte must be SEQUENCE tag (0x30)
+	if (derEncoded[0] !== 0x30) {
+		throw new PublicKeyExtractionError(
+			'Invalid DER encoding: missing SEQUENCE tag',
+		);
+	}
 
-  // Parse AlgorithmIdentifier SEQUENCE to find where BIT STRING starts
-  // Position 2 should be another SEQUENCE tag for AlgorithmIdentifier
-  if (derEncoded[2] !== 0x30) {
-    throw new PublicKeyExtractionError(
-      'Invalid DER encoding: missing AlgorithmIdentifier SEQUENCE'
-    );
-  }
+	// Parse AlgorithmIdentifier SEQUENCE to find where BIT STRING starts
+	// Position 2 should be another SEQUENCE tag for AlgorithmIdentifier
+	if (derEncoded[2] !== 0x30) {
+		throw new PublicKeyExtractionError(
+			'Invalid DER encoding: missing AlgorithmIdentifier SEQUENCE',
+		);
+	}
 
-  // Get length of AlgorithmIdentifier content
-  const algorithmIdentifierLength = derEncoded[3];
+	// Get length of AlgorithmIdentifier content
+	const algorithmIdentifierLength = derEncoded[3];
 
-  // BIT STRING starts after AlgorithmIdentifier SEQUENCE
-  // Position = 4 (first content byte) + algorithmIdentifierLength
-  const bitStringIndex = 4 + algorithmIdentifierLength;
+	// BIT STRING starts after AlgorithmIdentifier SEQUENCE
+	// Position = 4 (first content byte) + algorithmIdentifierLength
+	const bitStringIndex = 4 + algorithmIdentifierLength;
 
-  // Verify BIT STRING tag (0x03)
-  if (derEncoded[bitStringIndex] !== 0x03) {
-    throw new PublicKeyExtractionError(
-      'Invalid DER encoding: missing BIT STRING'
-    );
-  }
+	// Verify BIT STRING tag (0x03)
+	if (derEncoded[bitStringIndex] !== 0x03) {
+		throw new PublicKeyExtractionError(
+			'Invalid DER encoding: missing BIT STRING',
+		);
+	}
 
-  // Verify BIT STRING length (0x21 = 33 bytes: 1 byte unused bits + 32 bytes public key)
-  const bitStringLength = derEncoded[bitStringIndex + 1];
-  if (bitStringLength !== 0x21) {
-    throw new PublicKeyExtractionError(
-      `Unexpected BIT STRING length: expected 0x21 (33 bytes), got 0x${bitStringLength.toString(16)}`
-    );
-  }
+	// Verify BIT STRING length (0x21 = 33 bytes: 1 byte unused bits + 32 bytes public key)
+	const bitStringLength = derEncoded[bitStringIndex + 1];
+	if (bitStringLength !== 0x21) {
+		throw new PublicKeyExtractionError(
+			`Unexpected BIT STRING length: expected 0x21 (33 bytes), got 0x${bitStringLength.toString(16)}`,
+		);
+	}
 
-  // First byte after length is unused bits (0x00), next 32 bytes is the public key
-  const publicKeyStart = bitStringIndex + 3;
-  return derEncoded.slice(publicKeyStart, publicKeyStart + 32);
+	// First byte after length is unused bits (0x00), next 32 bytes is the public key
+	const publicKeyStart = bitStringIndex + 3;
+	return derEncoded.slice(publicKeyStart, publicKeyStart + 32);
 }
