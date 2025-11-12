@@ -591,7 +591,70 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions from the community! Whether you're fixing bugs, improving documentation, or adding new features, your help makes this project better for everyone.
+
+### Quick Start
+
+1. Fork the repository and clone your fork
+2. Install dependencies: `pnpm install`
+3. Make your changes and add tests
+4. Run tests: `pnpm test:run`
+5. Submit a pull request
+
+### Development Setup
+
+  ```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/solana-kms-signer.git
+cd solana-kms-signer
+
+# Install dependencies
+pnpm install
+
+# Set up environment (for examples)
+cp .env.example .env
+# Edit .env with your AWS credentials
+
+# Run tests
+pnpm test:run
+
+# Run linter
+pnpm lint
+  ```
+
+### Before Submitting a PR
+
+  ```bash
+# Run all checks
+pnpm lint         # Lint check
+pnpm test:run     # Run tests
+pnpm type-check   # TypeScript check
+pnpm build        # Build the project
+  ```
+
+### Commit Messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `test`: Adding or updating tests
+- `refactor`: Code refactoring
+- `chore`: Maintenance tasks
+
+Example: `feat: add support for batch transaction signing`
+
+### Need Help?
+
+- Read the full [Contributing Guide](CONTRIBUTING.md) for detailed guidelines
+- Check out our [Code of Conduct](CONTRIBUTING.md#code-of-conduct)
+- Look for issues labeled `good first issue` or `help wanted`
+- Join the [discussions](https://github.com/gtg7784/solana-kms-signer/discussions)
+
+### Current Contributors
+
+Thank you to all our contributors!
 
 ## Support
 
