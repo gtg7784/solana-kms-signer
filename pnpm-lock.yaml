@@ -32,7 +32,7 @@ importers:
         version: 4.1.4(vitest@4.1.4)
       dotenv:
         specifier: ^17.2.3
-        version: 17.4.1
+        version: 17.4.2
       tsx:
         specifier: ^4.20.6
         version: 4.21.0
@@ -1039,8 +1039,8 @@ packages:
     resolution: {integrity: sha512-ReEBKkIfe4ya47wlPYf/gu5ib6yUG0/Aez0JQZQz94kiWtRQvZIQbTiehsnwHvLSWJnQdhVeqYue7Id1dKr0qw==}
     engines: {node: '>=10'}
 
-  dotenv@17.4.1:
-    resolution: {integrity: sha512-k8DaKGP6r1G30Lx8V4+pCsLzKr8vLmV2paqEj1Y55GdAgJuIqpRp5FfajGF8KtwMxCz9qJc6wUIJnm053d/WCw==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   es-module-lexer@2.0.0:
@@ -2523,7 +2523,7 @@ snapshots:
 
   delay@5.0.0: {}
 
-  dotenv@17.4.1: {}
+  dotenv@17.4.2: {}
 
   es-module-lexer@2.0.0: {}
 
