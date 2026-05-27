@@ -31,8 +31,8 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Prerequisites
 
-- Node.js >= 16.0.0
-- pnpm 9.x
+- Node.js >= 22.13.0
+- pnpm 11.x
 - AWS Account with KMS access (for integration testing)
 - Basic understanding of Solana and AWS KMS
 - Git

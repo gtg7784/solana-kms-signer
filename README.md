@@ -4,7 +4,7 @@ A TypeScript library for signing Solana transactions using AWS KMS with ED25519 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/Node-%3E%3D22.13.0-green.svg)](https://nodejs.org/)
 [![npm](https://img.shields.io/npm/v/solana-kms-signer.svg)](https://www.npmjs.com/package/solana-kms-signer)
 [![AWS KMS](https://img.shields.io/badge/AWS-KMS-orange.svg)](https://aws.amazon.com/kms/)
 
@@ -21,7 +21,7 @@ A TypeScript library for signing Solana transactions using AWS KMS with ED25519 
 
 ## Prerequisites
 
-- **Node.js**: Version 16.0.0 or higher
+- **Node.js**: Version 22.13.0 or higher
 - **AWS Account**: With appropriate IAM permissions
 - **AWS KMS**: ED25519 key created in KMS (see setup instructions below)
 
