@@ -63,7 +63,7 @@
 		"@vitest/ui": "^4.0.8",
 		"dotenv": "^17.2.3",
 		"tsx": "^4.20.6",
-		"typescript": "^6.0.0",
+		"typescript": "^7.0.0",
 		"vitest": "^4.0.8"
 	},
 	"packageManager": "pnpm@11.5.0",
